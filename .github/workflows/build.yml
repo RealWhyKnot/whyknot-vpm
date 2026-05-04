@@ -1,0 +1,118 @@
+name: Build VPM Listing
+
+# Aggregates GitHub Releases from every repo listed in source.json into
+# a VPM-compatible index.json, then publishes it via GitHub Pages at
+# vpm.whyknot.dev/index.json.
+#
+# Triggers:
+#   - workflow_dispatch        : manual rebuild from the Actions tab
+#   - repository_dispatch      : the source repos POST event_type=rebuild-listing
+#                                from their release.yml after a tag push
+#   - schedule                 : daily safety net in case a dispatch is dropped
+#   - push to main             : rebuild when source.json or this workflow itself
+#                                changes (e.g. adding a new package)
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [rebuild-listing]
+  schedule:
+    - cron: '0 6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'source.json'
+      - '.github/workflows/build.yml'
+      - 'CNAME'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build index.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p public
+
+          base=$(jq '{name, id, url, author, packages: {}}' source.json)
+
+          while IFS= read -r owner_repo; do
+            echo "::group::Source $owner_repo"
+            releases=$(gh api "repos/$owner_repo/releases" --paginate)
+            count=$(echo "$releases" | jq 'length')
+            echo "  $count release(s) total"
+
+            while IFS= read -r rel; do
+              tag=$(echo "$rel" | jq -r .tag_name)
+              echo "  - release $tag"
+
+              pkgjson_url=$(echo "$rel" | jq -r '.assets[]? | select(.name=="package.json") | .browser_download_url' | head -1)
+              zip_url=$(echo "$rel" | jq -r '.assets[]? | select(.name | endswith(".zip")) | .browser_download_url' | head -1)
+
+              if [ -z "$pkgjson_url" ] || [ -z "$zip_url" ]; then
+                echo "    skip: missing package.json or .zip asset"
+                continue
+              fi
+
+              if ! pkg=$(curl -fsSL "$pkgjson_url" 2>/dev/null); then
+                echo "    skip: failed to fetch package.json"
+                continue
+              fi
+
+              # Rewrite the package's url field to the canonical release-asset URL.
+              # This way VCC pulls the zip directly from GitHub's CDN regardless of
+              # what the source.json baked into the manifest at zip-build time.
+              pkg=$(echo "$pkg" | jq --arg url "$zip_url" '.url = $url')
+
+              pkg_id=$(echo "$pkg" | jq -r '.name // empty')
+              pkg_ver=$(echo "$pkg" | jq -r '.version // empty')
+
+              if [ -z "$pkg_id" ] || [ -z "$pkg_ver" ]; then
+                echo "    skip: package.json missing name or version"
+                continue
+              fi
+
+              echo "    add $pkg_id @ $pkg_ver"
+              base=$(echo "$base" | jq \
+                --arg id "$pkg_id" \
+                --arg ver "$pkg_ver" \
+                --argjson pkg "$pkg" \
+                '.packages[$id].versions[$ver] = $pkg')
+            done < <(echo "$releases" | jq -c '.[] | select(.draft|not) | select(.prerelease|not)')
+
+            echo "::endgroup::"
+          done < <(jq -r '.sources[]' source.json)
+
+          echo "$base" | jq . > public/index.json
+          cp CNAME public/CNAME
+
+          echo "::group::Final listing summary"
+          jq '{name, packages: (.packages | map_values(.versions | keys))}' public/index.json
+          echo "::endgroup::"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
