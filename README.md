@@ -2,7 +2,8 @@
 
 A [VRChat Package Manager](https://vcc.docs.vrchat.com/vpm/) listing for [WhyKnot](https://whyknot.dev)'s VRChat editor tools. Add this listing to the VRChat Creator Companion (VCC) and the packages below appear in the Add-Package dialog of every Unity project you manage with VCC.
 
-**Listing URL:** `https://vpm.whyknot.dev/index.json`
+**Click to add to VCC:** <https://vpm.whyknot.dev/>
+**Manual entry URL** (paste into VCC's Add Repository dialog): `https://vpm.whyknot.dev/index.json`
 
 ## Packages
 
@@ -13,12 +14,15 @@ A [VRChat Package Manager](https://vcc.docs.vrchat.com/vpm/) listing for [WhyKno
 
 ## Add to VCC
 
+The fast path: click <https://vpm.whyknot.dev/>. The page redirects to a `vcc://` handler URL, VCC opens with the listing pre-filled, click **I Understand, Add Repository**.
+
+If the click path doesn't work (VCC not registered as the `vcc://` handler, browser blocks the redirect, etc.):
+
 1. Open the VRChat Creator Companion.
 2. Go to **Settings -> Packages -> Add Repository**.
 3. Paste `https://vpm.whyknot.dev/index.json` and click **I Understand, Add Repository**.
-4. Open any Unity project managed by VCC. The packages above are now available under **Manage Project -> Add Package**.
 
-You can also click [this `vcc://` link](vcc://vpm/addRepo?url=https://vpm.whyknot.dev/index.json) (works if VCC is installed and registered as the handler).
+After either path, open any Unity project managed by VCC. The packages above are now available under **Manage Project -> Add Package**.
 
 ## How it works
 

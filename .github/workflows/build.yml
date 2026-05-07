@@ -24,6 +24,7 @@ on:
       - 'source.json'
       - '.github/workflows/build.yml'
       - 'CNAME'
+      - 'index.html'
 
 permissions:
   contents: read
@@ -98,6 +99,7 @@ jobs:
 
           echo "$base" | jq . > public/index.json
           cp CNAME public/CNAME
+          cp index.html public/index.html
 
           echo "::group::Final listing summary"
           jq '{name, packages: (.packages | map_values(.versions | keys))}' public/index.json
