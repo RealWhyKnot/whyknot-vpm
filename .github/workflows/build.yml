@@ -49,6 +49,9 @@ jobs:
           mkdir -p public
 
           base=$(jq '{name, id, url, author, packages: {}}' source.json)
+          # lastRefreshed at top level is epoch millis (matches VRCFury's
+          # listing convention). Useful for consumers / debugging staleness.
+          base=$(echo "$base" | jq --argjson ts "$(($(date +%s) * 1000))" '. + {lastRefreshed: $ts}')
 
           while IFS= read -r owner_repo; do
             echo "::group::Source $owner_repo"
@@ -77,6 +80,17 @@ jobs:
               # This way VCC pulls the zip directly from GitHub's CDN regardless of
               # what the source.json baked into the manifest at zip-build time.
               pkg=$(echo "$pkg" | jq --arg url "$zip_url" '.url = $url')
+
+              # Compute zipSHA256 from the published artifact so VCC can verify
+              # integrity on download. Optional per the VPM spec; matches what
+              # packages.vrchat.com/official publishes. Failure here is not fatal:
+              # the listing still works, VCC just won't cross-check.
+              zip_sha=$(curl -fsSL "$zip_url" 2>/dev/null | sha256sum 2>/dev/null | awk '{print $1}')
+              if [ -n "$zip_sha" ] && [ "$zip_sha" != "-" ]; then
+                pkg=$(echo "$pkg" | jq --arg sha "$zip_sha" '.zipSHA256 = $sha')
+              else
+                echo "    warn: could not compute zipSHA256 for $tag"
+              fi
 
               pkg_id=$(echo "$pkg" | jq -r '.name // empty')
               pkg_ver=$(echo "$pkg" | jq -r '.version // empty')
