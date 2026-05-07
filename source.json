@@ -2,10 +2,7 @@
   "name": "WhyKnot Tools",
   "id": "dev.whyknot.vpm",
   "url": "https://vpm.whyknot.dev/index.json",
-  "author": {
-    "name": "WhyKnot",
-    "url": "https://whyknot.dev"
-  },
+  "author": "WhyKnot",
   "sources": [
     "RealWhyKnot/vrc-avatar-qol",
     "RealWhyKnot/vrcfury-qol"
