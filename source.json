@@ -5,6 +5,7 @@
   "author": "WhyKnot",
   "sources": [
     "RealWhyKnot/vrc-avatar-qol",
-    "RealWhyKnot/vrcfury-qol"
+    "RealWhyKnot/vrcfury-qol",
+    "RealWhyKnot/wk-core"
   ]
 }
