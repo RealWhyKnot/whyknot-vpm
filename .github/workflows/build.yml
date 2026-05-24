@@ -106,7 +106,7 @@ jobs:
                 --arg ver "$pkg_ver" \
                 --argjson pkg "$pkg" \
                 '.packages[$id].versions[$ver] = $pkg')
-            done < <(echo "$releases" | jq -c '.[] | select(.draft|not) | select(.prerelease|not)')
+            done < <(echo "$releases" | jq -c '.[] | select(.draft|not)')
 
             echo "::endgroup::"
           done < <(jq -r '.sources[]' source.json)
