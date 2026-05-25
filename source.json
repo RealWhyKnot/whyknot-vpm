@@ -4,7 +4,7 @@
   "url": "https://vpm.whyknot.dev/index.json",
   "author": "WhyKnot",
   "sources": [
-    "RealWhyKnot/vrc-avatar-qol",
-    "RealWhyKnot/vrcfury-qol"
+    "RealWhyKnot/wk-vrc-qol",
+    "RealWhyKnot/wk-vrcfury-qol"
   ]
 }
