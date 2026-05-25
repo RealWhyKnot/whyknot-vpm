@@ -53,8 +53,17 @@ jobs:
           # listing convention). Useful for consumers / debugging staleness.
           base=$(echo "$base" | jq --argjson ts "$(($(date +%s) * 1000))" '. + {lastRefreshed: $ts}')
 
-          while IFS= read -r owner_repo; do
-            echo "::group::Source $owner_repo"
+          # Each source.json entry is now an object: { repo, packageId }.
+          # packageId is the expected package.json name field; releases whose
+          # package.json declares a different name are skipped. This is how we
+          # keep historical releases tagged under a previous package id (e.g.
+          # after a rename) from leaking into the listing -- the old zips stay
+          # on GitHub Releases for anyone who wants them, but VCC only sees
+          # the current package id.
+          while IFS= read -r source_line; do
+            owner_repo=$(echo "$source_line" | jq -r '.repo')
+            expected_pkg_id=$(echo "$source_line" | jq -r '.packageId')
+            echo "::group::Source $owner_repo (expecting $expected_pkg_id)"
             releases=$(gh api "repos/$owner_repo/releases" --paginate)
             count=$(echo "$releases" | jq 'length')
             echo "  $count release(s) total"
@@ -76,6 +85,19 @@ jobs:
                 continue
               fi
 
+              pkg_id=$(echo "$pkg" | jq -r '.name // empty')
+              pkg_ver=$(echo "$pkg" | jq -r '.version // empty')
+
+              if [ -z "$pkg_id" ] || [ -z "$pkg_ver" ]; then
+                echo "    skip: package.json missing name or version"
+                continue
+              fi
+
+              if [ "$pkg_id" != "$expected_pkg_id" ]; then
+                echo "    skip: package id $pkg_id != expected $expected_pkg_id (legacy release; still downloadable from GitHub)"
+                continue
+              fi
+
               # Rewrite the package's url field to the canonical release-asset URL.
               # This way VCC pulls the zip directly from GitHub's CDN regardless of
               # what the source.json baked into the manifest at zip-build time.
@@ -92,14 +114,6 @@ jobs:
                 echo "    warn: could not compute zipSHA256 for $tag"
               fi
 
-              pkg_id=$(echo "$pkg" | jq -r '.name // empty')
-              pkg_ver=$(echo "$pkg" | jq -r '.version // empty')
-
-              if [ -z "$pkg_id" ] || [ -z "$pkg_ver" ]; then
-                echo "    skip: package.json missing name or version"
-                continue
-              fi
-
               echo "    add $pkg_id @ $pkg_ver"
               base=$(echo "$base" | jq \
                 --arg id "$pkg_id" \
@@ -109,7 +123,7 @@ jobs:
             done < <(echo "$releases" | jq -c '.[] | select(.draft|not)')
 
             echo "::endgroup::"
-          done < <(jq -r '.sources[]' source.json)
+          done < <(jq -c '.sources[]' source.json)
 
           echo "$base" | jq . > public/index.json
           cp CNAME public/CNAME

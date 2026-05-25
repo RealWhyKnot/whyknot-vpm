@@ -60,7 +60,7 @@ The build runs on:
 ## Adding a new package
 
 1. The source repo needs a `package.json` at root (VPM manifest) and `release.yml` matching the pattern in [wk-vrc-qol/.github/workflows/release.yml](https://github.com/RealWhyKnot/wk-vrc-qol/blob/main/.github/workflows/release.yml).
-2. Append `"<owner>/<repo>"` to `source.json`'s `sources` array. Push to `main` -- the `paths:` filter on the build workflow will trigger a rebuild.
+2. Append `{ "repo": "<owner>/<repo>", "packageId": "<dev.whyknot.foo>" }` to `source.json`'s `sources` array. The `packageId` is the expected `name` field in the source repo's `package.json`; releases whose `package.json` declares a different name are skipped (this is how a renamed package keeps historical zips on GitHub without dragging the old id back into VCC). Push to `main` -- the `paths:` filter on the build workflow will trigger a rebuild.
 3. Tag a release in the source repo. Its `release.yml` posts `repository_dispatch` here, which kicks the build a second time so the new release is in the listing within ~1 minute.
 
 ## License
