@@ -4,4 +4,5 @@ All notable user-visible changes to whyknot-vpm are tracked here.
 
 ## Unreleased
 
-_No notable changes since the last release._
+### Removed
+- **listing:** Dropped `dev.whyknot.wk-vrc-qol` from the listing; the package is unmaintained. Existing installs keep resolving their zips from the source repo's GitHub releases.
