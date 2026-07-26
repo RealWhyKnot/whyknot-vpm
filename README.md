@@ -1,3 +1,6 @@
+# Notice:
+I probably won't be publishing to this much anymore. As much as I would like to make my tools open source, it makes more sense to keep them private. I'm working on an avatar and gating these tools behind a license check would help prevent leaking of avatars while not preventing most editing. I have some seriously cool tools and if you ever want access to them, just purchasing one of my avatars will grant access. I hope to make it easy to transfer between projects outside of just what I create but this is why this repo is getting sort of abandoned.
+
 # WhyKnot VPM Listing
 
 A [VRChat Package Manager](https://vcc.docs.vrchat.com/vpm/) listing for [WhyKnot](https://whyknot.dev)'s VRChat editor tools. Add this listing to the VRChat Creator Companion (VCC) and the packages below appear in the Add-Package dialog of every Unity project you manage with VCC.
