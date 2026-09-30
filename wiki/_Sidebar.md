@@ -1,4 +1,2 @@
-# Navigation
-
-- [Home](Home)
-- [Changelog](Changelog)
+- [Home](Home.md)
+- [Changelog](Changelog.md)

@@ -1,24 +1,20 @@
 # Contributing
 
-Thanks for helping improve whyknot-vpm. Keep changes focused and easy to review.
+Keep changes focused and easy to review.
 
 ## Before opening an issue
 
-- Search existing issues and the wiki first.
+- Search existing issues first.
 - Include the version, operating system, relevant VRChat/SteamVR details, and logs when applicable.
-- Keep security reports private; use GitHub Security Advisories instead of public issues.
+- Report security problems privately through GitHub Security Advisories, not a public issue.
 
 ## Pull requests
 
 - Open one PR per behavior change or documentation update.
 - Describe why the change is needed, not only what files changed.
-- Update README, CHANGELOG, or wiki pages when behavior, setup, diagnostics, or release notes change.
-- Run the repository validation/build workflow before opening a PR.
+- Update the README when behavior or setup changes.
+- Run the build workflow before opening a PR.
 
 ## Commit style
 
-Prefer conventional commit subjects such as eat:, ix:, docs:, ci:, and chore:. Use [skip changelog] for changes that should not produce user-facing release notes.
-
-## Wiki edits
-
-The wiki/ directory is the source of truth for GitHub Wiki pages. Do not edit wiki pages directly on github.com unless you are creating the one-time placeholder page needed to initialize the wiki repository.
+Use conventional commit subjects such as `feat:`, `fix:`, `docs:`, `ci:` and `chore:`. Add `[skip changelog]` to changes that shouldn't appear in the release notes.
