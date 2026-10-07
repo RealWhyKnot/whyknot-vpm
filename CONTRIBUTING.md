@@ -1,20 +1,15 @@
 # Contributing
 
-Keep changes focused and easy to review.
+Issues and PRs are welcome. Small, focused changes are the easiest for me to review.
 
-## Before opening an issue
+## Issues
 
-- Search existing issues first.
-- Include the version, operating system, relevant VRChat/SteamVR details, and logs when applicable.
-- Report security problems privately through GitHub Security Advisories, not a public issue.
+Search the existing issues first. Include the package version, your OS, the VRChat and Unity details that matter, and any logs. Report security problems privately through GitHub Security Advisories, as described in [SECURITY.md](.github/SECURITY.md).
 
 ## Pull requests
 
-- Open one PR per behavior change or documentation update.
-- Describe why the change is needed, not only what files changed.
-- Update the README when behavior or setup changes.
-- Run the build workflow before opening a PR.
+One PR per behavior change or docs update. Say why the change is needed, not only which files changed. If setup or behavior changes, update the README in the same PR, and run the build workflow before you open it.
 
 ## Commit style
 
-Use conventional commit subjects such as `feat:`, `fix:`, `docs:`, `ci:` and `chore:`. Add `[skip changelog]` to changes that shouldn't appear in the release notes.
+Commit subjects use Conventional Commits: `feat:`, `fix:`, `docs:`, `ci:`, `chore:` and so on. Add `[skip changelog]` to keep a commit out of the release notes.
