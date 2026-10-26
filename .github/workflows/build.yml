@@ -107,8 +107,13 @@ jobs:
               # integrity on download. Optional per the VPM spec; matches what
               # packages.vrchat.com/official publishes. Failure here is not fatal:
               # the listing still works, VCC just won't cross-check.
-              zip_sha=$(curl -fsSL "$zip_url" 2>/dev/null | sha256sum 2>/dev/null | awk '{print $1}')
-              if [ -n "$zip_sha" ] && [ "$zip_sha" != "-" ]; then
+              zip_sha=""
+              zip_tmp=$(mktemp)
+              if curl -fsSL "$zip_url" -o "$zip_tmp" 2>/dev/null; then
+                zip_sha=$(sha256sum "$zip_tmp" | awk '{print $1}')
+              fi
+              rm -f "$zip_tmp"
+              if [ -n "$zip_sha" ]; then
                 pkg=$(echo "$pkg" | jq --arg sha "$zip_sha" '.zipSHA256 = $sha')
               else
                 echo "    warn: could not compute zipSHA256 for $tag"
