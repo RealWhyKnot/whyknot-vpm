@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s inherit_errexit
+
+repository_root=$(git rev-parse --show-toplevel)
+cd "${repository_root}"
+case "${OSTYPE}" in
+  msys* | cygwin*)
+    repository_windows=$(cygpath -w "${repository_root}")
+    MSYS_NO_PATHCONV=1 exec timeout 300 wsl.exe -d agent --cd "${repository_windows}" -- bash .githooks/pre-push
+    ;;
+  *) ;;
+esac
+
+gate_status=0
+timeout 120 node node_modules/stylelint/bin/stylelint.mjs "**/*.{css,html,svelte,vue,astro}" --max-warnings 0 \
+  || gate_status=1
+timeout 120 node node_modules/prettier/bin/prettier.cjs --check . || gate_status=1
+python3 -B .github/lint/style_check.py || gate_status=1
+shell_paths=$(git -c core.quotepath=off ls-files \
+  | awk -f .github/lint/shell-files.awk .github/lint/vendored-paths.txt -)
+mapfile -t shell_candidates <<<"${shell_paths}"
+shell_files=()
+for file in "${shell_candidates[@]}"; do
+  [[ -z ${file} ]] || shell_files+=("${file}")
+done
+shell_modes=$(git ls-files -s -- "${shell_files[@]}")
+shell_eols=$(git ls-files --eol -- "${shell_files[@]}")
+shellcheck -f gcc "${shell_files[@]}" || gate_status=1
+shfmt -d "${shell_files[@]}" || gate_status=1
+awk -v modes="${shell_modes}" -v eols="${shell_eols}" -f .github/lint/shell-style.awk "${shell_files[@]}" \
+  || gate_status=1
+
+temporary_directory=$(mktemp -d)
+trap 'rm -rf -- "${temporary_directory}"' EXIT
+cp .shellcheckrc .editorconfig "${temporary_directory}/"
+awk '
+  /^        run: \|$/ { print "#!/usr/bin/env bash"; is_in_run = 1; next }
+  is_in_run && /^          / { printf "%s", blank_lines; blank_lines = ""; sub(/^          /, ""); print; next }
+  is_in_run && /^[[:space:]]*$/ { blank_lines = blank_lines "\n"; next }
+  is_in_run { exit }
+' .github/workflows/build.yml >"${temporary_directory}/build.sh"
+[[ -s ${temporary_directory}/build.sh ]] || exit 1
+shellcheck -f gcc "${temporary_directory}/build.sh" || gate_status=1
+shfmt -d "${temporary_directory}/build.sh" || gate_status=1
+awk -f .github/lint/shell-style.awk "${temporary_directory}/build.sh" || gate_status=1
+timeout 60 actionlint -color || gate_status=1
+exit "${gate_status}"

@@ -1,4 +1,5 @@
 # Notice:
+
 I probably won't be publishing to this much anymore. As much as I would like to make my tools open source, it makes more sense to keep them private. I'm working on an avatar and gating these tools behind a license check would help prevent leaking of avatars while not preventing most editing. I have some seriously cool tools and if you ever want access to them, just purchasing one of my avatars will grant access. I hope to make it easy to transfer between projects outside of just what I create but this is why this repo is getting sort of abandoned.
 
 # WhyKnot VPM listing
@@ -11,8 +12,8 @@ Or paste `https://vpm.whyknot.dev/index.json` into VCC's Add Repository dialog.
 
 ## Packages
 
-| Package | ID | Source repo |
-|---|---|---|
+| Package                                                      | ID                           | Source repo                                                                 |
+| ------------------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------- |
 | [VRCFury QoL](https://github.com/RealWhyKnot/wk-vrcfury-qol) | `dev.whyknot.wk-vrcfury-qol` | [RealWhyKnot/wk-vrcfury-qol](https://github.com/RealWhyKnot/wk-vrcfury-qol) |
 
 ## Add to VCC
@@ -55,6 +56,7 @@ release.yml in source repo               this repo's build.yml             GitHu
 ```
 
 The build runs on:
+
 - `repository_dispatch: rebuild-listing`, which a source repo sends right after a release
 - `workflow_dispatch`, for a manual rebuild from the Actions tab
 - `schedule: cron '0 6 * * *'`, once a day in case a dispatch got lost

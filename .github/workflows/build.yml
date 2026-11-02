@@ -1,30 +1,18 @@
 name: Build VPM Listing
 
-# Aggregates GitHub Releases from every repo listed in source.json into
-# a VPM-compatible index.json, then publishes it via GitHub Pages at
-# vpm.whyknot.dev/index.json.
-#
-# Triggers:
-#   - workflow_dispatch        : manual rebuild from the Actions tab
-#   - repository_dispatch      : the source repos POST event_type=rebuild-listing
-#                                from their release.yml after a tag push
-#   - schedule                 : daily safety net in case a dispatch is dropped
-#   - push to main             : rebuild when source.json or this workflow itself
-#                                changes (e.g. adding a new package)
-
 on:
   workflow_dispatch:
   repository_dispatch:
     types: [rebuild-listing]
   schedule:
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
   push:
     branches: [main]
     paths:
-      - 'source.json'
-      - '.github/workflows/build.yml'
-      - 'CNAME'
-      - 'index.html'
+      - "source.json"
+      - ".github/workflows/build.yml"
+      - "CNAME"
+      - "index.html"
 
 permissions:
   contents: read
@@ -46,91 +34,82 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          shopt -s inherit_errexit
+          temporary_directory=$(mktemp -d)
+          trap 'rm -rf -- "${temporary_directory}"' EXIT
           mkdir -p public
 
-          base=$(jq '{name, id, url, author, packages: {}}' source.json)
-          # lastRefreshed at top level is epoch millis (matches VRCFury's
-          # listing convention). Useful for consumers / debugging staleness.
-          base=$(echo "$base" | jq --argjson ts "$(($(date +%s) * 1000))" '. + {lastRefreshed: $ts}')
+          listing=$(jq '{name, id, url, author, packages: {}}' source.json)
+          refreshed_seconds=$(date +%s)
+          listing=$(printf '%s\n' "${listing}" | jq --argjson timestamp "$((refreshed_seconds * 1000))" \
+            '. + {lastRefreshed: $timestamp}')
+          source_lines=$(jq -c '.sources[]' source.json)
+          while IFS= read -r source_line && [[ -n ${source_line} ]]; do
+            owner_repository=$(printf '%s\n' "${source_line}" | jq -r '.repo')
+            expected_package_id=$(printf '%s\n' "${source_line}" | jq -r '.packageId')
+            printf '::group::Source %s (expecting %s)\n' "${owner_repository}" "${expected_package_id}"
+            releases=$(timeout 60 gh api "repos/${owner_repository}/releases" --paginate)
+            release_count=$(printf '%s\n' "${releases}" | jq 'length')
+            printf '  %s release(s) total\n' "${release_count}"
 
-          # Each source.json entry is now an object: { repo, packageId }.
-          # packageId is the expected package.json name field; releases whose
-          # package.json declares a different name are skipped. This is how we
-          # keep historical releases tagged under a previous package id (e.g.
-          # after a rename) from leaking into the listing -- the old zips stay
-          # on GitHub Releases for anyone who wants them, but VCC only sees
-          # the current package id.
-          while IFS= read -r source_line; do
-            owner_repo=$(echo "$source_line" | jq -r '.repo')
-            expected_pkg_id=$(echo "$source_line" | jq -r '.packageId')
-            echo "::group::Source $owner_repo (expecting $expected_pkg_id)"
-            releases=$(gh api "repos/$owner_repo/releases" --paginate)
-            count=$(echo "$releases" | jq 'length')
-            echo "  $count release(s) total"
+            release_lines=$(printf '%s\n' "${releases}" | jq -c '.[] | select(.draft|not)')
+            while IFS= read -r release && [[ -n ${release} ]]; do
+              tag=$(printf '%s\n' "${release}" | jq -r .tag_name)
+              printf '  - release %s\n' "${tag}"
 
-            while IFS= read -r rel; do
-              tag=$(echo "$rel" | jq -r .tag_name)
-              echo "  - release $tag"
+              package_json_url=$(printf '%s\n' "${release}" | jq -r \
+                '.assets[]? | select(.name=="package.json") | .browser_download_url' | head -1)
+              zip_url=$(printf '%s\n' "${release}" | jq -r \
+                '.assets[]? | select(.name | endswith(".zip")) | .browser_download_url' | head -1)
 
-              pkgjson_url=$(echo "$rel" | jq -r '.assets[]? | select(.name=="package.json") | .browser_download_url' | head -1)
-              zip_url=$(echo "$rel" | jq -r '.assets[]? | select(.name | endswith(".zip")) | .browser_download_url' | head -1)
-
-              if [ -z "$pkgjson_url" ] || [ -z "$zip_url" ]; then
+              if [[ -z ${package_json_url} ]] || [[ -z ${zip_url} ]]; then
                 echo "    skip: missing package.json or .zip asset"
                 continue
               fi
 
-              if ! pkg=$(curl -fsSL "$pkgjson_url" 2>/dev/null); then
+              if ! package=$(curl -fsSL --max-time 60 "${package_json_url}" 2>/dev/null); then
                 echo "    skip: failed to fetch package.json"
                 continue
               fi
 
-              pkg_id=$(echo "$pkg" | jq -r '.name // empty')
-              pkg_ver=$(echo "$pkg" | jq -r '.version // empty')
+              package_id=$(printf '%s\n' "${package}" | jq -r '.name // empty')
+              package_version=$(printf '%s\n' "${package}" | jq -r '.version // empty')
 
-              if [ -z "$pkg_id" ] || [ -z "$pkg_ver" ]; then
+              if [[ -z ${package_id} ]] || [[ -z ${package_version} ]]; then
                 echo "    skip: package.json missing name or version"
                 continue
               fi
 
-              if [ "$pkg_id" != "$expected_pkg_id" ]; then
-                echo "    skip: package id $pkg_id != expected $expected_pkg_id (legacy release; still downloadable from GitHub)"
+              if [[ ${package_id} != "${expected_package_id}" ]]; then
+                printf '    skip: package id %s != expected %s (legacy release; still downloadable from GitHub)\n' \
+                  "${package_id}" "${expected_package_id}"
                 continue
               fi
-
-              # Rewrite the package's url field to the canonical release-asset URL.
-              # This way VCC pulls the zip directly from GitHub's CDN regardless of
-              # what the source.json baked into the manifest at zip-build time.
-              pkg=$(echo "$pkg" | jq --arg url "$zip_url" '.url = $url')
-
-              # Compute zipSHA256 from the published artifact so VCC can verify
-              # integrity on download. Optional per the VPM spec; matches what
-              # packages.vrchat.com/official publishes. Failure here is not fatal:
-              # the listing still works, VCC just won't cross-check.
-              zip_sha=""
-              zip_tmp=$(mktemp)
-              if curl -fsSL "$zip_url" -o "$zip_tmp" 2>/dev/null; then
-                zip_sha=$(sha256sum "$zip_tmp" | awk '{print $1}')
+              package=$(printf '%s\n' "${package}" | jq --arg url "${zip_url}" '.url = $url')
+              zip_checksum=""
+              zip_path="${temporary_directory}/package.zip"
+              if curl -fsSL --max-time 300 "${zip_url}" -o "${zip_path}" 2>/dev/null; then
+                zip_checksum=$(sha256sum "${zip_path}" | awk '{print $1}')
               fi
-              rm -f "$zip_tmp"
-              if [ -n "$zip_sha" ]; then
-                pkg=$(echo "$pkg" | jq --arg sha "$zip_sha" '.zipSHA256 = $sha')
+              rm -f -- "${zip_path}"
+              if [[ -n ${zip_checksum} ]]; then
+                package=$(printf '%s\n' "${package}" | jq --arg checksum "${zip_checksum}" '.zipSHA256 = $checksum')
               else
-                echo "    warn: could not compute zipSHA256 for $tag"
+                printf '    warn: could not compute zipSHA256 for %s\n' "${tag}"
               fi
 
-              echo "    add $pkg_id @ $pkg_ver"
-              base=$(echo "$base" | jq \
-                --arg id "$pkg_id" \
-                --arg ver "$pkg_ver" \
-                --argjson pkg "$pkg" \
-                '.packages[$id].versions[$ver] = $pkg')
-            done < <(echo "$releases" | jq -c '.[] | select(.draft|not)')
+              printf '    add %s @ %s\n' "${package_id}" "${package_version}"
+              listing=$(printf '%s\n' "${listing}" | jq \
+                --arg id "${package_id}" \
+                --arg version "${package_version}" \
+                --argjson package "${package}" \
+                '.packages[$id].versions[$version] = $package')
+            done <<<"${release_lines}"
 
             echo "::endgroup::"
-          done < <(jq -c '.sources[]' source.json)
+          done <<<"${source_lines}"
 
-          echo "$base" | jq . > public/index.json
+          printf '%s\n' "${listing}" | jq . >public/index.json
           cp CNAME public/CNAME
           cp index.html public/index.html
 
