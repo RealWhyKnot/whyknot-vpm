@@ -1,18 +1,12 @@
-name: Build VPM Listing
+name: Publish VPM Listing
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [rebuild-listing]
-  schedule:
-    - cron: "0 6 * * *"
   push:
     branches: [main]
     paths:
-      - "source.json"
+      - "site/**"
       - ".github/workflows/build.yml"
-      - "CNAME"
-      - "index.html"
 
 permissions:
   contents: read
@@ -28,98 +22,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
-      - name: Build index.json
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Check the zips against index.json
         run: |
           set -euo pipefail
           shopt -s inherit_errexit
-          temporary_directory=$(mktemp -d)
-          trap 'rm -rf -- "${temporary_directory}"' EXIT
-          mkdir -p public
-
-          listing=$(jq '{name, id, url, author, packages: {}}' source.json)
-          refreshed_seconds=$(date +%s)
-          listing=$(printf '%s\n' "${listing}" | jq --argjson timestamp "$((refreshed_seconds * 1000))" \
-            '. + {lastRefreshed: $timestamp}')
-          source_lines=$(jq -c '.sources[]' source.json)
-          while IFS= read -r source_line && [[ -n ${source_line} ]]; do
-            owner_repository=$(printf '%s\n' "${source_line}" | jq -r '.repo')
-            expected_package_id=$(printf '%s\n' "${source_line}" | jq -r '.packageId')
-            printf '::group::Source %s (expecting %s)\n' "${owner_repository}" "${expected_package_id}"
-            releases=$(timeout 60 gh api "repos/${owner_repository}/releases" --paginate)
-            release_count=$(printf '%s\n' "${releases}" | jq 'length')
-            printf '  %s release(s) total\n' "${release_count}"
-
-            release_lines=$(printf '%s\n' "${releases}" | jq -c '.[] | select(.draft|not)')
-            while IFS= read -r release && [[ -n ${release} ]]; do
-              tag=$(printf '%s\n' "${release}" | jq -r .tag_name)
-              printf '  - release %s\n' "${tag}"
-
-              package_json_url=$(printf '%s\n' "${release}" | jq -r \
-                '.assets[]? | select(.name=="package.json") | .browser_download_url' | head -1)
-              zip_url=$(printf '%s\n' "${release}" | jq -r \
-                '.assets[]? | select(.name | endswith(".zip")) | .browser_download_url' | head -1)
-
-              if [[ -z ${package_json_url} ]] || [[ -z ${zip_url} ]]; then
-                echo "    skip: missing package.json or .zip asset"
-                continue
-              fi
-
-              if ! package=$(curl -fsSL --max-time 60 "${package_json_url}" 2>/dev/null); then
-                echo "    skip: failed to fetch package.json"
-                continue
-              fi
-
-              package_id=$(printf '%s\n' "${package}" | jq -r '.name // empty')
-              package_version=$(printf '%s\n' "${package}" | jq -r '.version // empty')
-
-              if [[ -z ${package_id} ]] || [[ -z ${package_version} ]]; then
-                echo "    skip: package.json missing name or version"
-                continue
-              fi
-
-              if [[ ${package_id} != "${expected_package_id}" ]]; then
-                printf '    skip: package id %s != expected %s (legacy release; still downloadable from GitHub)\n' \
-                  "${package_id}" "${expected_package_id}"
-                continue
-              fi
-              package=$(printf '%s\n' "${package}" | jq --arg url "${zip_url}" '.url = $url')
-              zip_checksum=""
-              zip_path="${temporary_directory}/package.zip"
-              if curl -fsSL --max-time 300 "${zip_url}" -o "${zip_path}" 2>/dev/null; then
-                zip_checksum=$(sha256sum "${zip_path}" | awk '{print $1}')
-              fi
-              rm -f -- "${zip_path}"
-              if [[ -n ${zip_checksum} ]]; then
-                package=$(printf '%s\n' "${package}" | jq --arg checksum "${zip_checksum}" '.zipSHA256 = $checksum')
-              else
-                printf '    warn: could not compute zipSHA256 for %s\n' "${tag}"
-              fi
-
-              printf '    add %s @ %s\n' "${package_id}" "${package_version}"
-              listing=$(printf '%s\n' "${listing}" | jq \
-                --arg id "${package_id}" \
-                --arg version "${package_version}" \
-                --argjson package "${package}" \
-                '.packages[$id].versions[$version] = $package')
-            done <<<"${release_lines}"
-
-            echo "::endgroup::"
-          done <<<"${source_lines}"
-
-          printf '%s\n' "${listing}" | jq . >public/index.json
-          cp CNAME public/CNAME
-          cp index.html public/index.html
-
-          echo "::group::Final listing summary"
-          jq '{name, packages: (.packages | map_values(.versions | keys))}' public/index.json
-          echo "::endgroup::"
+          foreign=$(jq -r --arg base "https://vpm.whyknot.dev/packages/" \
+            '.packages[].versions[].url | select(startswith($base) | not)' site/index.json)
+          if [[ -n ${foreign} ]]; then
+            printf 'index.json has a zip url outside this site: %s\n' "${foreign}" >&2
+            exit 1
+          fi
+          checksums=$(jq -r '.packages[].versions[] | "\(.zipSHA256)  site/packages/\(.url | sub(".*/"; ""))"' site/index.json)
+          printf '%s\n' "${checksums}" | sha256sum --check --quiet
+          listed=$(printf '%s\n' "${checksums}" | wc -l)
+          stored=$(find site/packages -name '*.zip' | wc -l)
+          if [[ ${listed} -ne ${stored} ]]; then
+            printf 'index.json lists %s zips, site/packages holds %s\n' "${listed}" "${stored}" >&2
+            exit 1
+          fi
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: public
+          path: site
 
   deploy:
     needs: build

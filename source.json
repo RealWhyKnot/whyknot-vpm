@@ -1,7 +1,0 @@
-{
-  "name": "WhyKnot Tools",
-  "id": "dev.whyknot.vpm",
-  "url": "https://vpm.whyknot.dev/index.json",
-  "author": "WhyKnot",
-  "sources": [{ "repo": "RealWhyKnot/wk-vrcfury-qol", "packageId": "dev.whyknot.wk-vrcfury-qol" }]
-}

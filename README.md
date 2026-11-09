@@ -30,43 +30,9 @@ The packages are then under Manage Project > Add Package in any Unity project VC
 
 ## How it works
 
-This repo builds `index.json` and nothing else. Each package's zips stay on its source repo's GitHub Releases.
+The listing is frozen. `site/` holds `index.json` and every release zip, and GitHub Pages serves that folder as it is. Nothing is fetched from the package repos any more.
 
-```
-release.yml in source repo               this repo's build.yml             GitHub Pages
---------------------------                ---------------------             ------------
-  on tag v*:
-    build zip + package.json
-    create GitHub Release  -----------+
-    POST repository_dispatch          |
-        rebuild-listing  ----------------+
-                                      |  |
-                                      |  v
-                                      |  fetch all releases of every
-                                      |  repo in source.json,
-                                      |  download each release's
-                                      |  package.json, rewrite url --> public/index.json
-                                      |                                      |
-                                      |                                      v
-                                      |                            vpm.whyknot.dev/index.json
-                                      |
-                                      v
-                              GitHub Releases keep
-                              the zips on GH's CDN
-```
-
-The build runs on:
-
-- `repository_dispatch: rebuild-listing`, which a source repo sends right after a release
-- `workflow_dispatch`, for a manual rebuild from the Actions tab
-- `schedule: cron '0 6 * * *'`, once a day in case a dispatch got lost
-- any push to `main` that changes `source.json` or the workflow
-
-## Adding a new package
-
-1. The source repo needs a VPM `package.json` at its root and a `release.yml` like [wk-vrcfury-qol's](https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/.github/workflows/release.yml).
-2. Add `{ "repo": "<owner>/<repo>", "packageId": "<dev.whyknot.foo>" }` to the `sources` array in `source.json`. The `packageId` has to match the `name` in the source repo's `package.json`, and releases with any other name are skipped. A renamed package keeps its old zips on GitHub, and its old id stays out of VCC. Pushing to `main` rebuilds the listing.
-3. Tag a release in the source repo. Its `release.yml` sends `repository_dispatch` here and the new release is in the listing about a minute later.
+The workflow checks each zip against the SHA-256 in `index.json` and publishes the folder when `site/` changes.
 
 ## License
 

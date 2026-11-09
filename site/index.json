@@ -1,0 +1,173 @@
+{
+  "name": "WhyKnot Tools",
+  "id": "dev.whyknot.vpm",
+  "url": "https://vpm.whyknot.dev/index.json",
+  "author": "WhyKnot",
+  "packages": {
+    "dev.whyknot.wk-vrcfury-qol": {
+      "versions": {
+        "1.2.5": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.5",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.5.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "80507f032a40f12d5e1d58d8727a7a548cf35603f72319f2b6944dd29328057d"
+        },
+        "1.2.4": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.4",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.4.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "306be82aacca3f8641971eec9fd1f8f06a6a5a9fa78835c70b41953ac806d93c"
+        },
+        "1.2.3": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.3",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.3.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "5f042f9930be4b0798ac56b35eaaba150e1d5942a73716fb175e423b774d23d9"
+        },
+        "1.2.2": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.2",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.2.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "d386328d6e325453575c9f3630ac26b94359486551d3a4a1cd3c3a57d666f0a6"
+        },
+        "1.2.1": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.1",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.1.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "846412ce0ec8ba0cca87aa9374e9ac9dbdf1211335dfa3b6323f2c7333e06185"
+        },
+        "1.2.0": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.0",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.0.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "c890969c757333f488fb35b9bf263b7643f96cfc4e513a9e6b9e48b14f78ea19"
+        },
+        "1.2.0-beta.2": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.0-beta.2",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move/merge VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.0-beta.2.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "8ae29c4fd331631a716078ed88b095df69ecd690fd8ff33dd315a790ca89cd14"
+        },
+        "1.2.6": {
+          "name": "dev.whyknot.wk-vrcfury-qol",
+          "displayName": "VRCFury QoL",
+          "version": "1.2.6",
+          "unity": "2022.3",
+          "description": "Quality-of-life Editor tools for VRCFury. Right-click and inline-button affordances for things you'd otherwise dig through nested inspectors for: move VRCFury components between GameObjects, replace references across a selection, auto-sync Global Parameter on Toggles, migrate child toggles into a Flipbook, missing-reference warnings on startup, hot reload + compile-error log.",
+          "author": {
+            "name": "WhyKnot",
+            "url": "https://whyknot.dev"
+          },
+          "license": "GPL-3.0-or-later",
+          "url": "https://vpm.whyknot.dev/packages/dev.whyknot.wk-vrcfury-qol-1.2.6.zip",
+          "documentationUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol",
+          "changelogUrl": "https://github.com/RealWhyKnot/wk-vrcfury-qol/blob/main/CHANGELOG.md",
+          "vpmDependencies": {
+            "com.vrcfury.vrcfury": ">=1.1300.0"
+          },
+          "keywords": ["vrchat", "vrcfury", "editor-tools", "avatar"],
+          "zipSHA256": "c628d158c68a9552973488c3077f1dbd8dd426271243231b888a09dd2d8701c8"
+        }
+      }
+    }
+  },
+  "lastRefreshed": 1794235244000
+}
